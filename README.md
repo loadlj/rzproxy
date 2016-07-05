@@ -3,7 +3,7 @@
 A local proxy help you chose the bset proxy from proxy pool
 
 
-## Useage
+## Usage
 
 Start rzproxy
 
