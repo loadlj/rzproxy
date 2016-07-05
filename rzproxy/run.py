@@ -9,7 +9,6 @@ from check_proxy import ProxyCheck
 from http_relay import HttpRelayHandler
 
 logger = logging.getLogger(__name__)
-set_logger(logging.INFO)
 
 
 def load_file(proxy_file):
@@ -27,8 +26,11 @@ def load_file(proxy_file):
 @click.option("--db", default=0, help="redis database")
 @click.option("--password", default=None, help="redis password")
 @click.option("--interval", default=30 * 60 * 60, help="scheduler interval")
+@click.option("--log-level", default="INFO",
+              help="DEBUG, INFO, WARNING, ERROR, CRITICAL")
 def main(host, port, file_name, redis_host, redis_port,
-         db, password, interval):
+         db, password, interval, log_level):
+    set_logger(getattr(logging, log_level))
     proxy_list = load_file(file_name)
     queue = ProxyQueue(redis_host, redis_port, db, password)
     checker = ProxyCheck(proxy_list, queue)
