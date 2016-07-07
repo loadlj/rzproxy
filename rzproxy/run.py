@@ -25,7 +25,7 @@ def load_file(proxy_file):
 @click.option("--redis-port", default=6379, help="redis port", type=float)
 @click.option("--db", default=0, help="redis database")
 @click.option("--password", default=None, help="redis password")
-@click.option("--interval", default=30 * 60 * 60, help="scheduler interval")
+@click.option("--interval", default=10 * 60 * 60, help="scheduler interval")
 @click.option("--log-level", default="INFO",
               help="DEBUG, INFO, WARNING, ERROR, CRITICAL")
 def main(host, port, file_name, redis_host, redis_port,
@@ -34,10 +34,9 @@ def main(host, port, file_name, redis_host, redis_port,
     proxy_list = load_file(file_name)
     queue = ProxyQueue(redis_host, redis_port, db, password)
     checker = ProxyCheck(proxy_list, queue)
-    scheldurer = Manager(checker, queue, interval)
-    scheldurer.start()
     relay_handler = HttpRelayHandler(queue)
-    relay_handler.run()
+    scheldurer = Manager(checker, queue, relay_handler, interval)
+    scheldurer.run()
 
 if __name__ == '__main__':
     main()

@@ -33,7 +33,6 @@ class ProxyCheck(object):
             response_time = self._dump_reposne_time(format_proxy, target_url)
             weight += 1.0 / response_time if response_time > 0 else 0
         weight = weight / len(EXAMPLE_URL)
-        logger.info("{} weight is {}".format(proxy, weight))
         self.queue.set(proxy, weight)
 
     def check(self):

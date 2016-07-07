@@ -17,8 +17,14 @@ class ProxyQueue(object):
             if value >= max_value:
                 max_value = value
                 max_key = key
-        self.reduce_weight(max_key)
         return max_key
+
+    @property
+    def setup_cache(self):
+        cache = {}
+        for key in self.queue.keys():
+            cache[key] = self.get(key)
+        return cache
 
     @property
     def last_updatetime(self):
