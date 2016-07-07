@@ -25,7 +25,7 @@ def load_file(proxy_file):
 @click.option("--redis-port", default=6379, help="redis port", type=float)
 @click.option("--db", default=0, help="redis database")
 @click.option("--password", default=None, help="redis password")
-@click.option("--interval", default=10 * 60 * 60, help="scheduler interval")
+@click.option("--interval", default=30 * 60, help="scheduler interval")
 @click.option("--log-level", default="INFO",
               help="DEBUG, INFO, WARNING, ERROR, CRITICAL")
 def main(host, port, file_name, redis_host, redis_port,
