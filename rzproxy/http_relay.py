@@ -34,7 +34,7 @@ class HttpRelayHandler(multiprocessing.Process):
         proxy_value = self.cache.get(best_proxy)
         logger.info("proxy is {}, weight is {}"
                     .format(best_proxy, proxy_value))
-        self.cache[best_proxy] = proxy_value * 0.5
+        self.cache[best_proxy] = proxy_value * 0.8
         ip, port = best_proxy.split(":")
         try:
             remote_sock = self._create_remote_connection((ip, int(port)))
@@ -49,7 +49,7 @@ class HttpRelayHandler(multiprocessing.Process):
                     data = remote_sock.recv(BUF_SIZE)
                     if local_sock.send(data) <= 0:
                         break
-            self.cache[best_proxy] = self.cache[best_proxy] / 0.5
+            self.cache[best_proxy] = self.cache[best_proxy] / 0.8
             remote_sock.close()
         except Exception, e:
             # connection refused
