@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 import time
+import logging
 import mysql.connector
+
+logger = logging.getLogger(__name__)
 
 
 class ProxyQueue(object):
@@ -67,13 +70,9 @@ class ProxyQueue(object):
                 "UPDATE proxy_pool SET weight={} WHERE proxy='{}'"
                 .format(value, key))
 
-    def reduce_weight(self, key):
-        current_value = self.get(key)
-        self._update(key, current_value * 0.8)
-
-    def add_weight(self, key):
-        current_value = self.get(key)
-        self._update(key, current_value / 0.8)
+    def clean_all(self):
+        self._execute("TRUNCATE TABLE proxy_pool")
+        logger.info("sweep the old proxy list")
 
     def _execute(self, sql_query, values=[]):
         dbcur = self._dbcur()
