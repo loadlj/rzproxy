@@ -19,22 +19,24 @@ def load_file(proxy_file):
 
 @click.command()
 @click.option("--host", default="127.0.0.1", help="rzproxy host")
-@click.option("--port", default=8399, help="rzproxy port", type=float)
+@click.option("--port", default=8399, help="rzproxy port", type=int)
 @click.option("--file-name", help="proxy list file", required=True)
-@click.option("--redis-host", default="127.0.0.1", help="redis host")
-@click.option("--redis-port", default=6379, help="redis port", type=float)
-@click.option("--db", default=0, help="redis database")
-@click.option("--password", default=None, help="redis password")
-@click.option("--interval", default=10 * 60 * 60, help="scheduler interval")
+@click.option("--mysql-host", default="127.0.0.1", help="mysql host")
+@click.option("--mysql-port", default=3306, help="mysql port", type=float)
+@click.option("--db", default="rzproxy", help="mysql name")
+@click.option("--user", default="root", help="mysql user")
+@click.option("--password", help="mysql password")
+@click.option("--target-url", default=None, help="target url")
+@click.option("--interval", default=30 * 60, help="scheduler interval")
 @click.option("--log-level", default="INFO",
               help="DEBUG, INFO, WARNING, ERROR, CRITICAL")
-def main(host, port, file_name, redis_host, redis_port,
-         db, password, interval, log_level):
+def main(host, port, file_name, mysql_host, mysql_port,
+         db, user, password, target_url, interval, log_level):
     set_logger(getattr(logging, log_level))
     proxy_list = load_file(file_name)
-    queue = ProxyQueue(redis_host, redis_port, db, password)
-    checker = ProxyCheck(proxy_list, queue)
-    relay_handler = HttpRelayHandler(queue)
+    queue = ProxyQueue(mysql_host, mysql_port, db, user, password)
+    checker = ProxyCheck(proxy_list, queue, target_url)
+    relay_handler = HttpRelayHandler(queue, (host, port))
     scheldurer = Manager(checker, queue, relay_handler, interval)
     scheldurer.run()
 
