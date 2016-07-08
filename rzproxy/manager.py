@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 class Manager(object):
-    def __init__(self, checker, queue, handler, interval=60):
+    def __init__(self, checker, queue, handler, interval):
         self._queue = queue
         self._last_updatetime = queue.last_updatetime
         self._interval = interval
