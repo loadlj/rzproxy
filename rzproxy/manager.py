@@ -19,11 +19,12 @@ class Manager(object):
         while True:
             now = int(time.time())
             if now - self._last_updatetime >= self._interval:
-                logger.info("checking the proxy weight...")
-                self._queue.clean_all()
+                logger.info(
+                        "start checking proxy list...just wait a minute")
                 self._checker.check()
                 self._last_updatetime = now
                 self._handler.setup_cache()
+                logger.info("the proxy_list has checked out...")
             self._call_back()
 
     def _call_back(self):

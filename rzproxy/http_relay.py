@@ -37,11 +37,8 @@ class HttpRelayHandler(multiprocessing.Process):
         proxy_value = self.cache.get(best_proxy)
         logger.debug("proxy is {}, weight is {}"
                      .format(best_proxy, proxy_value))
-        self.cache[best_proxy] = proxy_value * 0.8
+        self.cache[best_proxy] = proxy_value * 0.5
         ip, port = best_proxy.split(":")
-
-        request_data_list = []
-        response_data_list = []
 
         try:
             remote_sock = self._create_remote_connection((ip, int(port)))
@@ -52,19 +49,20 @@ class HttpRelayHandler(multiprocessing.Process):
                     request_data = local_sock.recv(BUF_SIZE)
                     if remote_sock.send(request_data) <= 0:
                         break
-                    request_data_list.append(request_data)
 
                 if remote_sock in r:
                     response_data = remote_sock.recv(BUF_SIZE)
                     if local_sock.send(response_data) <= 0:
+                        logger.debug("remote close connection")
+                        remote_sock.close()
                         break
-                    response_data_list.append(response_data)
+                    response = self._parse_response(response_data)
+                    if response:
+                        request = self._parse_request(request_data)
+                        logger.info("({}) {} {}".format(
+                            best_proxy, request, response))
 
-            request = self._parse_request("".join(request_data_list))
-            response = self._parse_response("".join(response_data_list))
-            logger.info("({}) {} {}".format(best_proxy, request, response))
-            self.cache[best_proxy] = self.cache[best_proxy] / 0.8
-            remote_sock.close()
+            self.cache[best_proxy] = self.cache[best_proxy] / 0.5
         except Exception, e:
             # connection refused
             logger.error(e.message)
@@ -80,6 +78,8 @@ class HttpRelayHandler(multiprocessing.Process):
         header = response_data.split(CRLF)[0]
         if re.match(r"HTTP/\d\.\d", header):
             return header
+        else:
+            return None
 
     def _create_remote_connection(self, proxy):
         remote_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

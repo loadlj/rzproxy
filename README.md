@@ -7,7 +7,7 @@ A local proxy help you chose the bset proxy from proxy pool
 
 Start rzproxy
 
-	python run.py --host 127.0.0.1 --port 8399 --file-name proxy_pool.txt
+	python run.py --host 127.0.0.1 --port 8399 --file-name proxy_pool.txt --password xxx
 
 proxy.txt format:
 	

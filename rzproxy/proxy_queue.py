@@ -72,7 +72,6 @@ class ProxyQueue(object):
 
     def clean_all(self):
         self._execute("TRUNCATE TABLE proxy_pool")
-        logger.info("sweep the old proxy list")
 
     def _execute(self, sql_query, values=[]):
         dbcur = self._dbcur()
