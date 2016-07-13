@@ -28,20 +28,23 @@ class ProxyCheck(object):
         self.queue = queue
 
     def _calculate_weight(self, proxy):
-        # TODO check target url list
         weight = 0
         format_proxy = {"http": proxy}
         for url in self.url_list:
             response_time = self._dump_reposne_time(format_proxy, url)
             weight += 1.0 / response_time if response_time > 0 else 0
         weight = weight / 4
-        self.queue.set(proxy, weight)
+        self.proxy_insert_cache[proxy] = weight
+        # self.queue.set(proxy, weight)
 
     def check(self):
+        self.proxy_insert_cache = {}
         proxy_pool = pool.Pool(10)
         for proxy in self.proxy_list:
             proxy_pool.spawn(self._calculate_weight, proxy)
         proxy_pool.join()
+        for proxy, weight in self.proxy_insert_cache.items():
+            self.queue.set(proxy, weight)
 
     def _dump_reposne_time(self, proxy, url):
         try:
