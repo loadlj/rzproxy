@@ -39,22 +39,30 @@ class HttpRelayHandler(multiprocessing.Process):
                      .format(best_proxy, proxy_value))
         self.cache[best_proxy] = proxy_value * 0.8
         ip, port = best_proxy.split(":")
+
+        request_data_list = []
+        response_data_list = []
+
         try:
             remote_sock = self._create_remote_connection((ip, int(port)))
             while True:
                 r, w, e = select.select(
                         [local_sock, remote_sock], [], [])
                 if local_sock in r:
-                    data = local_sock.recv(BUF_SIZE)
-                    if remote_sock.send(data) <= 0:
+                    request_data = local_sock.recv(BUF_SIZE)
+                    if remote_sock.send(request_data) <= 0:
                         break
-                    self._parse_request(best_proxy, data)
-                if remote_sock in r:
-                    data = remote_sock.recv(BUF_SIZE)
-                    if local_sock.send(data) <= 0:
-                        break
-                    self._parse_response(data)
+                    request_data_list.append(request_data)
 
+                if remote_sock in r:
+                    response_data = remote_sock.recv(BUF_SIZE)
+                    if local_sock.send(response_data) <= 0:
+                        break
+                    response_data_list.append(response_data)
+
+            request = self._parse_request("".join(request_data_list))
+            response = self._parse_response("".join(response_data_list))
+            logger.info("({}) {} {}".format(best_proxy, request, response))
             self.cache[best_proxy] = self.cache[best_proxy] / 0.8
             remote_sock.close()
         except Exception, e:
@@ -64,14 +72,14 @@ class HttpRelayHandler(multiprocessing.Process):
     def setup_cache(self):
         self.cache = self.queue.setup_cache
 
-    def _parse_request(self, proxy, request_data):
-        header = request_data.split(CRLF)[0]
-        logger.info("({}) {}".format(proxy, header))
+    def _parse_request(self, request_data):
+        request_header = request_data.split(CRLF)[0]
+        return request_header
 
     def _parse_response(self, response_data):
         header = response_data.split(CRLF)[0]
         if re.match(r"HTTP/\d\.\d", header):
-            logger.info("{}".format(header))
+            return header
 
     def _create_remote_connection(self, proxy):
         remote_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

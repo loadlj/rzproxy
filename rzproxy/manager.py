@@ -24,7 +24,6 @@ class Manager(object):
                 self._checker.check()
                 self._last_updatetime = now
                 self._handler.setup_cache()
-                logger.info("the proxy list is checked over...")
             self._call_back()
 
     def _call_back(self):

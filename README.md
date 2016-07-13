@@ -25,4 +25,4 @@ Then use ("127.0.0.1:8399") as http proxy
 
 - [ ] resend http request when http response code is 4xx or 5xx 
 
-- [ ] sql AssertionError
+- [x] sql AssertionError
