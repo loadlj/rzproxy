@@ -9,15 +9,15 @@ logger = logging.getLogger(__name__)
 class ProxyQueue(object):
     def __init__(self, host="localhost", port=3306, database='rzproxy',
                  user="root", passwd=None):
-        self.database_name = database
-        self.conn = mysql.connector.connect(user=user,
-                                            password=passwd,
-                                            host=host,
-                                            port=port,
-                                            autocommit=True)
+        self._database_name = database
+        self._conn = mysql.connector.connect(user=user,
+                                             password=passwd,
+                                             host=host,
+                                             port=port,
+                                             autocommit=True)
         if database not in [x[0] for x in self._execute('show databases')]:
             self._execute('CREATE DATABASE {}'.format(database))
-        self.conn.database = database
+        self._conn.database = database
         self._execute('''CREATE TABLE IF NOT EXISTS proxy_pool (
             `proxy` varchar(20) PRIMARY KEY,
             `weight` double(16, 4),
@@ -80,11 +80,11 @@ class ProxyQueue(object):
 
     def _dbcur(self):
         try:
-            if self.conn.unread_result:
-                self.conn.get_rows()
-            return self.conn.cursor()
+            if self._conn.unread_result:
+                self._conn.get_rows()
+            return self._conn.cursor()
         except (mysql.connector.OperationalError,
                 mysql.connector.InterfaceError):
-            self.conn.ping(reconnect=True)
-            self.conn.database = self.database_name
-            return self.conn.cursor()
+            self._conn.ping(reconnect=True)
+            self._conn.database = self._database_name
+            return self._conn.cursor()

@@ -22,22 +22,22 @@ class HttpRelayHandler(multiprocessing.Process):
 
     def __init__(self, queue, proxy=("127.0.0.1", 8399), pool_count=100):
         multiprocessing.Process.__init__(self)
-        self.proxy = proxy
-        self.queue = queue
-        self.pool = pool.Pool(pool_count)
-        self.cache = None
-        self.server = StreamServer(
-                proxy, self._handle_connection, spawn=self.pool)
+        self._proxy = proxy
+        self._queue = queue
+        self._pool = pool.Pool(pool_count)
+        self._cache = None
+        self._server = StreamServer(
+                proxy, self._handle_connection, spawn=self._pool)
 
     def _handle_connection(self, local_sock, address):
-        if not self.cache:
-            self.cache = self.queue.setup_cache
-        cache = self.cache
+        if not self._cache:
+            self._cache = self._queue.setup_cache
+        cache = self._cache
         best_proxy = max(cache, key=cache.get)
-        proxy_value = self.cache.get(best_proxy)
+        proxy_value = self._cache.get(best_proxy)
         logger.debug("proxy is {}, weight is {}"
                      .format(best_proxy, proxy_value))
-        self.cache[best_proxy] = proxy_value * 0.5
+        self._cache[best_proxy] = proxy_value * 0.5
         ip, port = best_proxy.split(":")
 
         try:
@@ -62,13 +62,13 @@ class HttpRelayHandler(multiprocessing.Process):
                         logger.info("({}) {} {}".format(
                             best_proxy, request, response))
 
-            self.cache[best_proxy] = self.cache[best_proxy] / 0.5
+            self._cache[best_proxy] = self._cache[best_proxy] / 0.5
         except Exception, e:
             # connection refused
             logger.error(e.message)
 
     def setup_cache(self):
-        self.cache = self.queue.setup_cache
+        self._cache = self._queue.setup_cache
 
     def _parse_request(self, request_data):
         request_header = request_data.split(CRLF)[0]
@@ -87,5 +87,5 @@ class HttpRelayHandler(multiprocessing.Process):
         return remote_sock
 
     def run(self):
-        logger.info("Starting local server on {}.".format(self.proxy))
-        self.server.serve_forever()
+        logger.info("Starting local server on {}.".format(self._proxy))
+        self._server.serve_forever()

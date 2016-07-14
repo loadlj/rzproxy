@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class ProxyCheck(object):
     def __init__(self, proxy_list, queue, target_url=None):
-        self.proxy_list = proxy_list
+        self._proxy_list = proxy_list
         self.headers = {"User-Agent": HEADERS}
         self.url_list = [
                 "http://www.baidu.com",
@@ -40,7 +40,7 @@ class ProxyCheck(object):
     def check(self):
         self.proxy_insert_cache = {}
         proxy_pool = pool.Pool(10)
-        for proxy in self.proxy_list:
+        for proxy in self._proxy_list:
             proxy_pool.spawn(self._calculate_weight, proxy)
         proxy_pool.join()
         for proxy, weight in self.proxy_insert_cache.items():
