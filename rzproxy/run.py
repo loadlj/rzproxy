@@ -26,8 +26,10 @@ def load_file(proxy_file):
 @click.option("--db", default="rzproxy", help="mysql name")
 @click.option("--user", default="root", help="mysql user")
 @click.option("--password", help="mysql password")
-@click.option("--target-url", default=None, help="target url")
-@click.option("--interval", default=30 * 60, help="scheduler interval")
+@click.option("--target-url", default=None,
+              help="the target url you will crawl")
+@click.option("--interval", default=30 * 60,
+              help="scheduler interval", type=float)
 @click.option("--log-level", default="INFO",
               help="DEBUG, INFO, WARNING, ERROR, CRITICAL")
 def main(host, port, file_name, mysql_host, mysql_port,

@@ -23,6 +23,6 @@ Then use ("127.0.0.1:8399") as http proxy
 
 - [x] http parse
 
-- [ ] resend http request when http response code is 4xx or 5xx 
+- [ ] resend http request and reduce proxy weight when proxy response code is 4xx or 5xx 
 
 - [x] sql AssertionError
