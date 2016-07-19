@@ -26,6 +26,8 @@ class HttpRelayHandler(multiprocessing.Process):
         self._queue = queue
         self._pool = pool.Pool(pool_count)
         self._cache = None
+        # tag proxy when response code is not 200
+        self._error_code_trigger = {}
         self._server = StreamServer(
                 proxy, self._handle_connection, spawn=self._pool)
 
@@ -41,12 +43,14 @@ class HttpRelayHandler(multiprocessing.Process):
         ip, port = best_proxy.split(":")
 
         try:
+            max_connection = 0
             remote_sock = self._create_remote_connection((ip, int(port)))
             while True:
                 r, w, e = select.select(
                         [local_sock, remote_sock], [], [])
                 if local_sock in r:
                     request_data = local_sock.recv(BUF_SIZE)
+                    max_connection += 1
                     if remote_sock.send(request_data) <= 0:
                         break
 
@@ -58,14 +62,35 @@ class HttpRelayHandler(multiprocessing.Process):
                         break
                     response = self._parse_response(response_data)
                     if response:
+                        response_code = re.match("HTTP/\d\.\d (\d+)",
+                                                 response).groups()[0]
+                        self._sweep_unvalid_proxy(best_proxy, response_code)
                         request = self._parse_request(request_data)
                         logger.info("({}) {} {}".format(
                             best_proxy, request, response))
+                if max_connection >= 10:
+                    remote_sock.close()
+                    break
 
             self._cache[best_proxy] = self._cache[best_proxy] / 0.5
-        except Exception, e:
-            # connection refused
-            logger.error(e.message)
+        except Exception:
+            import traceback
+            traceback.print_exc()
+
+    # reduce proxy weight when the same error code repeat 5 times
+    def _sweep_unvalid_proxy(self, proxy, error_code):
+        if not re.match("^2|3\d\d", error_code):
+            if proxy in self._error_code_trigger:
+                if self._error_code_trigger[proxy][error_code] >= 5:
+                    logger.error("{} is not valid, sweep it".format(proxy))
+                    self._error_code_trigger[proxy] = {error_code: 0}
+                    self._cache[proxy] = self._cache[proxy] * 0.1
+                else:
+                    count = self._error_code_trigger[proxy][error_code]
+                    logger.info("{} {}".format(proxy, count))
+                    self._error_code_trigger[proxy][error_code] += 1
+            else:
+                self._error_code_trigger[proxy] = {error_code: 0}
 
     def setup_cache(self):
         self._cache = self._queue.setup_cache

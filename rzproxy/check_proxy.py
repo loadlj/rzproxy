@@ -39,7 +39,7 @@ class ProxyCheck(object):
 
     def check(self):
         self.proxy_insert_cache = {}
-        proxy_pool = pool.Pool(10)
+        proxy_pool = pool.Pool(20)
         for proxy in self._proxy_list:
             proxy_pool.spawn(self._calculate_weight, proxy)
         proxy_pool.join()
