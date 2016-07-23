@@ -1,6 +1,7 @@
 # rzproxy
+[![WTFPL](https://raw.githubusercontent.com/legacy-icons/license-icons/master/dist/32x32/wtfpl.png) WTFPL](http://www.wtfpl.net/)
 
-A local proxy help you chose the bset proxy from proxy pool.
+> A local proxy help you chose the bset proxy from proxy pool.
 
 
 ## Usage
