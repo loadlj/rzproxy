@@ -4,8 +4,9 @@ import logging
 
 from manager import Manager
 from logger import set_logger
-from proxy_queue import ProxyQueue
 from check_proxy import ProxyCheck
+from db.sqlite_db import SqliteQueue
+from db.mysql_db import MysqlQueue
 from http_relay import HttpRelayHandler
 
 logger = logging.getLogger(__name__)
@@ -19,6 +20,7 @@ def load_file(proxy_file):
 
 @click.command()
 @click.option("--host", default="127.0.0.1", help="rzproxy host")
+@click.option("--db-type", default="sqlite", help="mysql, sqlite")
 @click.option("--port", default=8399, help="rzproxy port", type=int)
 @click.option("--file-name", help="proxy list file", required=True)
 @click.option("--mysql-host", default="127.0.0.1", help="mysql host")
@@ -32,11 +34,14 @@ def load_file(proxy_file):
               help="scheduler interval", type=float)
 @click.option("--log-level", default="INFO",
               help="DEBUG, INFO, WARNING, ERROR, CRITICAL")
-def main(host, port, file_name, mysql_host, mysql_port,
+def main(host, db_model, port, file_name, mysql_host, mysql_port,
          db, user, password, target_url, interval, log_level):
     set_logger(getattr(logging, log_level))
     proxy_list = load_file(file_name)
-    queue = ProxyQueue(mysql_host, mysql_port, db, user, password)
+    if db_model == "sqlite":
+        queue = SqliteQueue()
+    else:
+        queue = MysqlQueue(mysql_host, mysql_port, db, user, password)
     checker = ProxyCheck(proxy_list, queue, target_url)
     relay_handler = HttpRelayHandler(queue, (host, port))
     scheldurer = Manager(checker, queue, relay_handler, interval)

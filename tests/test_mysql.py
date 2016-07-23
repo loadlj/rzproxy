@@ -2,12 +2,12 @@
 import time
 import unittest
 
-from rzproxy.proxy_queue import ProxyQueue
+from rzproxy.db.mysql_db import MysqlQueue
 
 
 class TestQueue(unittest.TestCase):
     def setUp(self):
-        self.queue = ProxyQueue(passwd="")
+        self.queue = MysqlQueue(passwd="")
 
     def test_get(self):
         self.queue.set("127.0.0.1", 123.00)
@@ -20,3 +20,6 @@ class TestQueue(unittest.TestCase):
 
     def tearDown(self):
         self.queue.remove("127.0.0.1")
+
+if __name__ == "__main__":
+    unittest.main()

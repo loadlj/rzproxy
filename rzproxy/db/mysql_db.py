@@ -6,7 +6,7 @@ import mysql.connector
 logger = logging.getLogger(__name__)
 
 
-class ProxyQueue(object):
+class MysqlQueue(object):
     def __init__(self, host="localhost", port=3306, database='rzproxy',
                  user="root", passwd=None):
         self._database_name = database

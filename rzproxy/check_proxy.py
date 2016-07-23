@@ -45,6 +45,7 @@ class ProxyCheck(object):
         proxy_pool.join()
         for proxy, weight in self.proxy_insert_cache.items():
             self.queue.set(proxy, weight)
+        self.queue.commit()
 
     def _dump_reposne_time(self, proxy, url):
         try:
