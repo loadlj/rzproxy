@@ -1,13 +1,13 @@
 # rzproxy
 
-A local proxy help you chose the bset proxy from proxy pool
+A local proxy help you chose the bset proxy from proxy pool.
 
 
 ## Usage
 
 Start rzproxy
 
-	python run.py --host 127.0.0.1 --port 8399 --file-name proxy_pool.txt --password xxx
+	python run.py --host 127.0.0.1 --port 8399 --file-name proxy_pool.txt
 
 proxy.txt format:
 	
@@ -20,9 +20,4 @@ Then use ("127.0.0.1:8399") as http proxy
 	requests.get(url, proixes={"http": "http://127.0.0.1:8399"})
 
 ## TODO
-
-- [x] http parse
-
-- [ ] resend http request and reduce proxy weight when proxy response code is 4xx or 5xx 
-
-- [x] sql AssertionError
+- [ ] support max connection for each proxy depeding on weight
