@@ -34,11 +34,11 @@ def load_file(proxy_file):
               help="scheduler interval", type=float)
 @click.option("--log-level", default="INFO",
               help="DEBUG, INFO, WARNING, ERROR, CRITICAL")
-def main(host, db_model, port, file_name, mysql_host, mysql_port,
+def main(host, db_type, port, file_name, mysql_host, mysql_port,
          db, user, password, target_url, interval, log_level):
     set_logger(getattr(logging, log_level))
     proxy_list = load_file(file_name)
-    if db_model == "sqlite":
+    if db_type == "sqlite":
         queue = SqliteQueue()
     else:
         queue = MysqlQueue(mysql_host, mysql_port, db, user, password)
